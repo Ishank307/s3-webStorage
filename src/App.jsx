@@ -172,7 +172,7 @@ const handleConnect = async (config) => {
 
   const handleLogout = async () => {
     try {
-      await api.post('/logout');
+      await api.post('/api/logout');
       setIsConnected(false); 
       setConnectionMessage(''); 
     } catch (error) {

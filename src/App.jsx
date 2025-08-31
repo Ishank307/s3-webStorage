@@ -170,37 +170,34 @@ const handleConnect = async (config) => {
 
 
 
-  const handleLogout = async () => {
+    const handleLogout = async () => {
     try {
       await api.post('/api/logout');
-      setIsConnected(false); 
-      setConnectionMessage(''); 
+      setIsConnected(false);
+      setConnectionMessage('');
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
 
   return (
-    <div className="container">
+    <div className={`container ${!isConnected ? 'centered-view' : ''}`}>
       <header>
         <h1>AWS S3 File Manager</h1>
+        {isConnected && (
+          <div className='header-actions'>
+            <button onClick={handleLogout} className='logout-btn'>Logout</button>
+          </div>
+        )}
       </header>
-      
+
       {isConnected ? (
-
-        <>
-
-        <div className='header-action'>
-          <button onClick={handleLogout} className='logout-button'>logout</button>
-        </div>
         <FileManager />
-
-        </>
       ) : (
-        <ConnectionForm 
-          onConnection={handleConnect} 
-          connecting={isConnecting} 
-          message={connectionMessage} 
+        <ConnectionForm
+          onConnection={handleConnect}
+          connecting={isConnecting}
+          message={connectionMessage}
         />
       )}
     </div>

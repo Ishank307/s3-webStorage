@@ -25,6 +25,13 @@ body {
   min-height: 100vh;
 }
 
+/* This new class vertically centers the connection form */
+.container.centered-view {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 header {
   text-align: center;
   margin-bottom: 3rem;
@@ -286,28 +293,24 @@ button:disabled {
   .container {
     padding: 1rem;
   }
-  
   h1 {
     font-size: 2rem;
   }
-  
   .card {
     padding: 1.5rem;
     margin-bottom: 1.5rem;
   }
-  
   .header-actions {
     position: static;
     text-align: center;
-    margin-bottom: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 2rem;
   }
-  
   .file-list-section li {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.75rem;
   }
-  
   .file-actions {
     width: 100%;
     justify-content: space-between;

@@ -6,10 +6,11 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import session from 'express-session'
 
 const app = express();
-const PORT = 8000
+// const PORT = 8000
+dotenv.config();
 
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_URL,
     credentials: true
 }))
 

@@ -10,7 +10,12 @@ const app = express();
 dotenv.config();
 
 app.use(cors({
-    origin: process.env.FRONTEND_URL,
+    origin: [
+        process.env.FRONTEND_URL,
+        'https://s3-webstorage.vercel.app/',
+        'http://localhost:3000',
+        'http://localhost:5173'  
+    ],
     credentials: true
 }))
 

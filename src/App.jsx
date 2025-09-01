@@ -3,9 +3,11 @@ import './App.css'
 import axios from 'axios'
 
 
+const API_BASE_URL = 'http://localhost:8000/api';
+
 
 const api=axios.create({
-  baseURL:'',
+  // baseURL:'http://localhost:8000/api',
   withCredentials:true,
 })
 

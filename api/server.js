@@ -10,10 +10,8 @@ const app = express();
 dotenv.config();
 
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'https://your-frontend-domain.vercel.app',
-    credentials: true,
-    methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
+    origin: process.env.FRONTEND_URL,
+    credentials: true
 }))
 
 app.use(session({
@@ -110,7 +108,7 @@ app.get('/api/generate-upload-url', async (req, res) => {
 })
 
 
-app.delete('/api/delete-file/:key(*)',async(req,res)=>{
+app.delete('/api/delete-file/:fileKey',async(req,res)=>{
 
      const S3Client = getS3ClientFromSession(req);
     if (!S3Client) {

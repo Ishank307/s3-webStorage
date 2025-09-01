@@ -80,8 +80,6 @@ app.post('/api/logout',(req,res)=>{
         res.clearCookie('connect.sid');
 
         res.status(200).json({ message: "Logged out successfully" });
-
-        return res.json({ message: 'Logged out successfully.'});
     })
 })
 
@@ -116,7 +114,7 @@ app.delete('/api/delete-file/:fileKey',async(req,res)=>{
     }
 
     const { fileKey } = req.params;
-    if (!key) {
+    if (!fileKey) {
         return res.status(400).json({ error: 'File key is required.' });
     }
 

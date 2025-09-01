@@ -10,8 +10,10 @@ const app = express();
 dotenv.config();
 
 app.use(cors({
-    origin: process.env.FRONTEND_URL,
-    credentials: true
+    origin: process.env.FRONTEND_URL || 'https://your-frontend-domain.vercel.app',
+    credentials: true,
+    methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
 }))
 
 app.use(session({

@@ -5,8 +5,7 @@ import axios from 'axios'
 
 
 const api=axios.create({
-  baseURL:process.env.FRONTEND_URL,
-  // baseURL:'http://localhost:8000/api',
+  // baseURL:process.env.FRONTEND_URL,
   withCredentials:true,
 })
 

@@ -108,7 +108,7 @@ app.get('/api/generate-upload-url', async (req, res) => {
 })
 
 
-app.delete('/api/delete-file/:fileKey',async(req,res)=>{
+app.delete('/api/delete-file/:key(*)',async(req,res)=>{
 
      const S3Client = getS3ClientFromSession(req);
     if (!S3Client) {
@@ -133,6 +133,7 @@ app.delete('/api/delete-file/:fileKey',async(req,res)=>{
     try{
         await S3Client.send(command);
         res.json({message:'File deleted successfully'});
+        res.status(200).json({ message: 'File deleted successfully' });
     }catch(error){
         console.log(error);
         res.status(500).json({error:'failed to delete file'})

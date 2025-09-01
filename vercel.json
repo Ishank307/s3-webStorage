@@ -22,10 +22,5 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ],
-  "functions": {
-    "api/server.js": {
-      "maxDuration": 30
-    }
-  }
+  ]
 }

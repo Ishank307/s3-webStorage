@@ -107,7 +107,7 @@ function FileManager(){
 
     try {
       setMessage('Deleting file...');
-      await api.delete(`/api/delete-file/${fileKey}`)
+      await api.delete(`/api/delete-file/${encodeURIComponent(fileKey)}`)
       setMessage('file deleted succesfully')
       fetchFiles();
     } catch (error) {

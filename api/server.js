@@ -88,8 +88,8 @@ app.post('/api/logout',(req,res)=>{
 
 app.get('/api/generate-upload-url', async (req, res) => {
 
-    const S3Client = getS3ClientFromSession(req);
-    if (!S3Client) {
+    const s3 = getS3ClientFromSession(req);
+    if (!s3) {
         return res.status(403).json({ error: "Not Connected to AWS." })
     }
 
@@ -102,7 +102,7 @@ app.get('/api/generate-upload-url', async (req, res) => {
         ContentType: contentType
     });
 
-    const url = await getSignedUrl(S3Client, command, { expiresIn: 3600 });
+    const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
     res.json({ uploadUrl: url });
 
 })
@@ -110,13 +110,13 @@ app.get('/api/generate-upload-url', async (req, res) => {
 
 app.delete('/api/delete-file/:fileKey',async(req,res)=>{
 
-     const S3Client = getS3ClientFromSession(req);
-    if (!S3Client) {
+     const s3 = getS3ClientFromSession(req);
+    if (!s3) {
         return res.status(403).json({ error: 'Not connected to AWS.' });
     }
 
-    const { key } = req.params;
-    if (!key) {
+    const { fileKey } = decodeURIComponent(req.params.fileKey);
+    if (!fileKey) {
         return res.status(400).json({ error: 'File key is required.' });
     }
 
@@ -126,12 +126,12 @@ app.delete('/api/delete-file/:fileKey',async(req,res)=>{
 
     const command = new DeleteObjectCommand({
         Bucket:bucketName,
-        Key:key
+        Key:fileKey
     })
 
 
     try{
-        await S3Client.send(command);
+        await s3.send(command);
         res.json({message:'File deleted successfully'});
     }catch(error){
         console.log(error);
@@ -143,8 +143,8 @@ app.delete('/api/delete-file/:fileKey',async(req,res)=>{
 
 
 app.get('/api/list-files', async (req, res) => {
-    const S3Client = getS3ClientFromSession(req);
-    if (!S3Client) {
+    const s3 = getS3ClientFromSession(req);
+    if (!s3) {
         return res.status(403).json({ error: "Not connected to AWS" });
     }
 
@@ -159,7 +159,7 @@ app.get('/api/list-files', async (req, res) => {
     const filesWithUrls = await Promise.all(
         Contents.map(async (file) => {
             const getObjectCommand = new GetObjectCommand({ Bucket: bucketName, Key: file.Key });
-            const url = await getSignedUrl(S3Client, getObjectCommand, { expiresIn: 3600 });
+            const url = await getSignedUrl(s3, getObjectCommand, { expiresIn: 3600 });
             return { key: file.Key, url: url, size: file.Size };
         })
     );

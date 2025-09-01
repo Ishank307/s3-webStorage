@@ -320,7 +320,7 @@ input:focus-visible {
 }
 
 
-.connection-form input::placeholder {
-  color: #a3a3a3;
-  opacity: 1; /* Override browser defaults that might make it transparent */
-}
+/* .connection-form input::placeholder { */
+  /* color: #a3a3a3; */
+  /* opacity: 1; Override browser defaults that might make it transparent */
+/* } */

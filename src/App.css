@@ -324,3 +324,127 @@ input:focus-visible {
   /* color: #a3a3a3; */
   /* opacity: 1; Override browser defaults that might make it transparent */
 /* } */
+* Help Section Styles */
+.help-section {
+  margin-top: 1.5rem;
+}
+
+.help-toggle {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  width: 100%;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px 0 rgba(59, 130, 246, 0.1);
+}
+
+.help-toggle:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 4px 12px 0 rgba(59, 130, 246, 0.15);
+  transform: translateY(-1px);
+}
+
+.help-content {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+  animation: slideDown 0.3s ease-out;
+}
+
+.help-content h3 {
+  margin: 0 0 1.5rem 0;
+  color: #1e293b;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.help-step {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.help-step:last-of-type {
+  border-bottom: none;
+  margin-bottom: 1rem;
+}
+
+.help-step h4 {
+  margin: 0 0 0.75rem 0;
+  color: #374151;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.help-step p, .help-step li {
+  color: #4b5563;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin: 0.5rem 0;
+}
+
+.help-step ol, .help-step ul {
+  margin: 0.5rem 0;
+  padding-left: 1.25rem;
+}
+
+.help-step ol li, .help-step ul li {
+  margin: 0.25rem 0;
+}
+
+.help-step a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.help-step a:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.help-warning {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.help-warning p {
+  margin: 0;
+  color: #92400e;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+@keyframes slideDown {
+  from { 
+    opacity: 0; 
+    transform: translateY(-10px);
+    max-height: 0;
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0);
+    max-height: 1000px;
+  }
+}
+
+/* Mobile responsiveness for help section */
+@media (max-width: 768px) {
+  .help-content {
+    padding: 1rem;
+  }
+  
+  .help-step ol, .help-step ul {
+    padding-left: 1rem;
+  }
+}

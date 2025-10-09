@@ -11,6 +11,72 @@ const api=axios.create({
   withCredentials:true,
 })
 
+function HelpSection() {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <div className="help-section">
+      <button 
+        className="help-toggle" 
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        {isExpanded ? '📖 Hide Setup Guide' : '❓ Need Help Getting AWS Keys?'}
+      </button>
+      
+      {isExpanded && (
+        <div className="help-content">
+          <h3>🚀 Quick AWS Setup Guide</h3>
+          
+          <div className="help-step">
+            <h4>Step 1: Create AWS Account</h4>
+            <p>Go to <a href="https://aws.amazon.com" target="_blank" rel="noopener noreferrer">aws.amazon.com</a> and sign up for a free account</p>
+          </div>
+
+          <div className="help-step">
+            <h4>Step 2: Create S3 Bucket</h4>
+            <ol>
+              <li>Go to AWS Console → S3</li>
+              <li>Click "Create bucket"</li>
+              <li>Choose a unique bucket name</li>
+              <li>Select your region (remember this!)</li>
+              <li>Click "Create bucket"</li>
+            </ol>
+          </div>
+
+          <div className="help-step">
+            <h4>Step 3: Get Access Keys</h4>
+            <ol>
+              <li>Go to AWS Console → IAM</li>
+              <li>Click "Users" → "Create user"</li>
+              <li>Enter username → Next</li>
+              <li>Select "Attach policies directly"</li>
+              <li>Search and select "AmazonS3FullAccess"</li>
+              <li>Click "Create user"</li>
+              <li>Click on your new user → "Security credentials"</li>
+              <li>Click "Create access key" → "Application running outside AWS"</li>
+              <li>Copy your Access Key ID and Secret Access Key</li>
+            </ol>
+          </div>
+
+          <div className="help-step">
+            <h4>Step 4: Fill the Form Above</h4>
+            <ul>
+              <li><strong>Bucket Name:</strong> Your S3 bucket name</li>
+              <li><strong>Region:</strong> Where you created the bucket (e.g., us-east-1, ap-south-1)</li>
+              <li><strong>Access Key ID:</strong> From Step 3</li>
+              <li><strong>Secret Access Key:</strong> From Step 3</li>
+            </ul>
+          </div>
+
+          <div className="help-warning">
+            <p>⚠️ <strong>Security Note:</strong> Never share your AWS keys publicly. This app stores them securely in your session only.</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 function ConnectionForm({onConnection,connecting,message}){
   const[config,setConfig]=useState({
@@ -30,19 +96,22 @@ function ConnectionForm({onConnection,connecting,message}){
   };
 
     return (
-    <div className="card connection-form">
-      <h2>Connect to Your S3 Bucket</h2>
-      <form onSubmit={handleSubmit}>
-        <input name="bucketName" value={config.bucketName} onChange={handleChange} placeholder="Bucket Name" required />
-        <input name="region" value={config.region} onChange={handleChange} placeholder="AWS Region (e.g., us-east-1)" required />
-        <input name="accessKeyId" value={config.accessKeyId} onChange={handleChange} placeholder="AWS Access Key ID" type="password" required />
-        <input name="secretAccessKey" value={config.secretAccessKey} onChange={handleChange} placeholder="AWS Secret Access Key" type="password" required />
-        <button type="submit" disabled={connecting}>
-          {connecting ? 'Connecting...' : 'Connect to S3'}
-        </button>
-        {message && <p className="message">{message}</p>}
-      </form>
-    </div>
+    <>
+      <div className="card connection-form">
+        <h2>Connect to Your S3 Bucket</h2>
+        <form onSubmit={handleSubmit}>
+          <input name="bucketName" value={config.bucketName} onChange={handleChange} placeholder="Bucket Name" required />
+          <input name="region" value={config.region} onChange={handleChange} placeholder="AWS Region (e.g., us-east-1)" required />
+          <input name="accessKeyId" value={config.accessKeyId} onChange={handleChange} placeholder="AWS Access Key ID" type="password" required />
+          <input name="secretAccessKey" value={config.secretAccessKey} onChange={handleChange} placeholder="AWS Secret Access Key" type="password" required />
+          <button type="submit" disabled={connecting}>
+            {connecting ? 'Connecting...' : 'Connect to S3'}
+          </button>
+          {message && <p className="message">{message}</p>}
+        </form>
+      </div>
+      <HelpSection />
+    </>
   );
 
 };

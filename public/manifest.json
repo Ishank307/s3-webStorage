@@ -1,0 +1,21 @@
+{
+  "name": "AWS S3 File Manager",
+  "short_name": "S3 Manager",
+  "description": "Free web-based file manager for Amazon S3 cloud storage",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/s3.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "utilities"],
+  "lang": "en",
+  "dir": "ltr"
+}

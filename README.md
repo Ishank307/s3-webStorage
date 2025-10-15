@@ -1,12 +1,73 @@
-# React + Vite
+# 🗂️ AWS S3 File Manager (V3)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack file management web app built with **React (Vite)**, **Express.js**, and **AWS S3** — supporting secure file uploads, downloads, and deletions using **presigned URLs** and **session-based authentication**.
 
-Currently, two official plugins are available:
+🚀 **Live Demo:** [https://s3-webstorage.vercel.app/](https://s3-webstorage.vercel.app/)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## 🌟 Features
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- 🔐 **Secure Authentication** — Session-based with environment variable handling  
+- ☁️ **AWS S3 Integration** — Upload, list, download, and delete files securely  
+- 💾 **Presigned URLs** — Safe, time-limited file operations  
+- 🧠 **Smart Error Handling** — User-friendly error messages and feedback  
+- 📱 **Responsive UI** — Modern design that adapts across devices  
+- ⚙️ **Serverless Ready** — Deployed with **Vercel serverless functions**  
+- 🧩 **Scalable Architecture** — Clean separation between client & server  
+
+---
+
+## 🏗️ Tech Stack
+
+**Frontend:** React 19 + Vite  
+**Backend:** Express.js + AWS SDK v3  
+**Deployment:** Vercel  
+**Storage:** AWS S3  
+**Security:** Presigned URLs, Session-based Auth  
+
+---
+
+## 📁 Project Structure
+```
+
+aws-s3-file-manager-v3/
+├── client/ # React frontend
+│ ├── src/
+│ ├── public/
+│ └── vite.config.js
+│
+├── server/ # Express backend
+│ ├── routes/
+│ ├── utils/
+│ ├── index.js
+│ └── .env.example
+│
+└── package.json
+```
+
+---
+
+## ⚙️ Setup Guide
+
+### 1️⃣ Clone the repository
+
+git clone https://github.com/<your-username>/aws-s3-file-manager-v3.git
+cd aws-s3-file-manager-v3
+
+```
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_REGION=your_region
+S3_BUCKET_NAME=your_bucket_name
+SESSION_SECRET=your_random_secret
+```
+
+Backend:
+cd server
+npm run dev
+
+
+Frontend:
+cd client
+npm run dev

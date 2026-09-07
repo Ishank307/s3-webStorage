@@ -1,49 +1,37 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
-import cookieParser from 'cookie-parser'
-import jwt from 'jsonwebtoken'
 import { S3Client, GetObjectCommand, PutObjectCommand, ListObjectsV2Command, DeleteObjectCommand, HeadBucketCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 dotenv.config();
 
 const app = express();
-const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_key_change_in_production';
-const COOKIE_NAME = 's3_session';
-
-const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
 
 app.use(cors({
-    origin: process.env.FRONTEND_URL || true, // Allow requesting origin in dev
+    origin: process.env.FRONTEND_URL || true,
     credentials: true,
+    allowedHeaders: ['Content-Type', 'x-aws-access-key-id', 'x-aws-secret-access-key', 'x-aws-region', 'x-aws-bucket-name'],
 }));
 
 app.use(express.json());
-app.use(cookieParser());
 
 
-// Decode the JWT cookie and return an S3 client + bucketName, or null
-const getSessionFromCookie = (req) => {
-    const token = req.cookies[COOKIE_NAME];
-    if (!token) return null;
+// Build S3 client from request headers on every call
+const getS3ClientFromHeaders = (req) => {
+    const accessKeyId     = req.headers['x-aws-access-key-id'];
+    const secretAccessKey = req.headers['x-aws-secret-access-key'];
+    const region          = req.headers['x-aws-region'];
 
-    try {
-        return jwt.verify(token, JWT_SECRET); // { accessKeyId, secretAccessKey, region, bucketName }
-    } catch {
-        return null;
-    }
+    if (!accessKeyId || !secretAccessKey || !region) return null;
+
+    return new S3Client({ region, credentials: { accessKeyId, secretAccessKey } });
 };
 
-
-// Check if a valid session cookie exists (used on frontend mount)
-app.get('/api/status', (req, res) => {
-    const session = getSessionFromCookie(req);
-    res.json({ connected: !!session });
-});
+const getBucketName = (req) => req.headers['x-aws-bucket-name'];
 
 
-// Validate credentials, then issue a signed JWT as an httpOnly cookie
+// Validate credentials and bucket on connect
 app.post('/api/connect', async (req, res) => {
     const { accessKeyId, secretAccessKey, region, bucketName } = req.body;
 
@@ -52,29 +40,8 @@ app.post('/api/connect', async (req, res) => {
     }
 
     try {
-        const tempS3Client = new S3Client({
-            region,
-            credentials: { accessKeyId, secretAccessKey },
-        });
-
-        await tempS3Client.send(new HeadBucketCommand({ Bucket: bucketName }));
-
-        // Credentials valid — pack them into a signed JWT cookie
-        const token = jwt.sign({ accessKeyId, secretAccessKey, region, bucketName }, JWT_SECRET, {
-            expiresIn: '30d',
-        });
-
-        const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
-        const expirationDate = new Date(Date.now() + thirtyDaysMs);
-
-        res.cookie(COOKIE_NAME, token, {
-            httpOnly: true,
-            secure: isProduction, // true on Vercel, false locally
-            sameSite: 'Lax', // Because the API is on the exact same domain (Vercel rewrite or Vite proxy)
-            maxAge: thirtyDaysMs, 
-            expires: expirationDate, // Extra compatibility for mobile browsers
-        });
-
+        const s3 = new S3Client({ region, credentials: { accessKeyId, secretAccessKey } });
+        await s3.send(new HeadBucketCommand({ Bucket: bucketName }));
         res.status(200).json({ message: 'Connected successfully!' });
     } catch (err) {
         console.error('Connection failed', err);
@@ -83,24 +50,12 @@ app.post('/api/connect', async (req, res) => {
 });
 
 
-// Clear the session cookie
-app.post('/api/logout', (req, res) => {
-    res.clearCookie(COOKIE_NAME, {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: 'Lax',
-    });
-    res.status(200).json({ message: 'Logged out successfully.' });
-});
-
-
 app.get('/api/generate-upload-url', async (req, res) => {
-    const session = getSessionFromCookie(req);
-    if (!session) return res.status(403).json({ error: 'Not connected to AWS.' });
+    const s3 = getS3ClientFromHeaders(req);
+    if (!s3) return res.status(403).json({ error: 'Not connected to AWS.' });
 
-    const { accessKeyId, secretAccessKey, region, bucketName } = session;
-    const s3 = new S3Client({ region, credentials: { accessKeyId, secretAccessKey } });
     const { fileName, contentType } = req.query;
+    const bucketName = getBucketName(req);
 
     const command = new PutObjectCommand({
         Bucket: bucketName,
@@ -114,15 +69,14 @@ app.get('/api/generate-upload-url', async (req, res) => {
 
 
 app.delete('/api/delete-file/:fileKey', async (req, res) => {
-    const session = getSessionFromCookie(req);
-    if (!session) return res.status(403).json({ error: 'Not connected to AWS.' });
+    const s3 = getS3ClientFromHeaders(req);
+    if (!s3) return res.status(403).json({ error: 'Not connected to AWS.' });
 
-    const { accessKeyId, secretAccessKey, region, bucketName } = session;
-    const s3 = new S3Client({ region, credentials: { accessKeyId, secretAccessKey } });
     const { fileKey } = req.params;
+    if (!fileKey) return res.status(400).json({ error: 'File key is required.' });
 
     try {
-        await s3.send(new DeleteObjectCommand({ Bucket: bucketName, Key: fileKey }));
+        await s3.send(new DeleteObjectCommand({ Bucket: getBucketName(req), Key: fileKey }));
         res.json({ message: 'File deleted successfully.' });
     } catch (error) {
         console.error(error);
@@ -132,11 +86,10 @@ app.delete('/api/delete-file/:fileKey', async (req, res) => {
 
 
 app.get('/api/list-files', async (req, res) => {
-    const session = getSessionFromCookie(req);
-    if (!session) return res.status(403).json({ error: 'Not connected to AWS.' });
+    const s3 = getS3ClientFromHeaders(req);
+    if (!s3) return res.status(403).json({ error: 'Not connected to AWS.' });
 
-    const { accessKeyId, secretAccessKey, region, bucketName } = session;
-    const s3 = new S3Client({ region, credentials: { accessKeyId, secretAccessKey } });
+    const bucketName = getBucketName(req);
 
     const { Contents = [] } = await s3.send(new ListObjectsV2Command({
         Bucket: bucketName,
@@ -152,6 +105,7 @@ app.get('/api/list-files', async (req, res) => {
 
     res.json(filesWithUrls.filter(f => f.size > 0));
 });
+
 
 if (!process.env.VERCEL) {
     const PORT = process.env.PORT || 8000;

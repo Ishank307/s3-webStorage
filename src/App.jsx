@@ -2,10 +2,32 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import axios from 'axios'
 
+const STORAGE_KEY = 's3_config';
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '',
-  withCredentials: true, // send the httpOnly JWT cookie on every request
 });
+
+// Read stored config and attach as headers on every request
+api.interceptors.request.use((config) => {
+  const stored = getStoredConfig();
+  if (stored) {
+    config.headers['x-aws-access-key-id']     = stored.accessKeyId;
+    config.headers['x-aws-secret-access-key'] = stored.secretAccessKey;
+    config.headers['x-aws-region']            = stored.region;
+    config.headers['x-aws-bucket-name']       = stored.bucketName;
+  }
+  return config;
+});
+
+function getStoredConfig() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
 
 function HelpSection() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -65,7 +87,7 @@ function HelpSection() {
           </div>
 
           <div className="help-warning">
-            <p>⚠️ <strong>Security Note:</strong> Never share your AWS keys publicly. This app stores them securely in your session only.</p>
+            <p>⚠️ <strong>Security Note:</strong> Never share your AWS keys publicly. This app stores them only in your browser's local storage.</p>
           </div>
         </div>
       )}
@@ -74,15 +96,15 @@ function HelpSection() {
 }
 
 
-function ConnectionForm({onConnection,connecting,message}){
-  const[config,setConfig]=useState({
-    accessKeyId:'',
-    secretAccessKey:'',
-    region:'ap-south-1',
-    bucketName:'',
-  })
+function ConnectionForm({onConnection, connecting, message}) {
+  const [config, setConfig] = useState({
+    accessKeyId: '',
+    secretAccessKey: '',
+    region: 'ap-south-1',
+    bucketName: '',
+  });
 
-   const handleChange = (e) => {
+  const handleChange = (e) => {
     setConfig({ ...config, [e.target.name]: e.target.value });
   };
 
@@ -91,7 +113,7 @@ function ConnectionForm({onConnection,connecting,message}){
     onConnection(config);
   };
 
-    return (
+  return (
     <>
       <div className="card connection-form">
         <h2>Connect to Your S3 Bucket</h2>
@@ -109,16 +131,15 @@ function ConnectionForm({onConnection,connecting,message}){
       <HelpSection />
     </>
   );
+}
 
-};
 
-
-function FileManager(){
+function FileManager() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [message,setMessage]=useState('');
-  const [fileList,setFileList]=useState([]);
-  const [isLoadingFiles,setIsLoadingFiles]=useState(true);
+  const [message, setMessage] = useState('');
+  const [fileList, setFileList] = useState([]);
+  const [isLoadingFiles, setIsLoadingFiles] = useState(true);
 
   const fetchFiles = async () => {
     try {
@@ -132,13 +153,11 @@ function FileManager(){
     }
   };
 
-
   useEffect(() => {
     fetchFiles();
   }, []);
 
   const handleFileChange = (e) => setSelectedFile(e.target.files[0]);
-
 
   const handleUpload = async () => {
     if (!selectedFile) return;
@@ -164,16 +183,13 @@ function FileManager(){
     }
   };
 
-
-     const handleDelete = async (fileKey) => {
-    if (!window.confirm("Are you sure you want to delete this file?")) {
-      return;
-    }
+  const handleDelete = async (fileKey) => {
+    if (!window.confirm('Are you sure you want to delete this file?')) return;
 
     try {
       setMessage('Deleting file...');
-      await api.delete(`/api/delete-file/${encodeURIComponent(fileKey)}`)
-      setMessage('file deleted succesfully')
+      await api.delete(`/api/delete-file/${encodeURIComponent(fileKey)}`);
+      setMessage('File deleted successfully');
       fetchFiles();
     } catch (error) {
       console.error('Error deleting file:', error);
@@ -181,7 +197,7 @@ function FileManager(){
     }
   };
 
- return (
+  return (
     <>
       <div className="card upload-section">
         <h2>Upload a New File</h2>
@@ -215,16 +231,10 @@ function FileManager(){
 
 
 function App() {
-  const [isConnected, setIsConnected] = useState(false);
+  // Restore session instantly from localStorage — no network call needed
+  const [isConnected, setIsConnected] = useState(() => !!getStoredConfig());
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionMessage, setConnectionMessage] = useState('');
-
-  // On mount: ping backend to check if a valid JWT cookie already exists
-  useEffect(() => {
-    api.get('/api/status')
-      .then(res => { if (res.data.connected) setIsConnected(true); })
-      .catch(() => {}); // no cookie or expired — stay on login screen
-  }, []);
 
   const handleConnect = async (config) => {
     setIsConnecting(true);
@@ -232,6 +242,8 @@ function App() {
     try {
       const response = await api.post('/api/connect', config);
       setConnectionMessage(response.data.message);
+      // Save config to localStorage so session persists across refreshes and tab closes
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
       setIsConnected(true);
     } catch (error) {
       setConnectionMessage(error.response?.data?.message || 'Failed to connect.');
@@ -240,8 +252,8 @@ function App() {
     }
   };
 
-  const handleLogout = async () => {
-    await api.post('/api/logout');
+  const handleLogout = () => {
+    localStorage.removeItem(STORAGE_KEY);
     setIsConnected(false);
     setConnectionMessage('');
   };

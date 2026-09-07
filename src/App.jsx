@@ -1,15 +1,11 @@
-import { useState ,useEffect} from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import axios from 'axios'
 
-
-const API_BASE_URL = 'http://localhost:8000/api';
-
-
-const api=axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '', 
-  withCredentials:true,
-})
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || '',
+  withCredentials: true, // send the httpOnly JWT cookie on every request
+});
 
 function HelpSection() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -223,7 +219,14 @@ function App() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionMessage, setConnectionMessage] = useState('');
 
-const handleConnect = async (config) => {
+  // On mount: ping backend to check if a valid JWT cookie already exists
+  useEffect(() => {
+    api.get('/api/status')
+      .then(res => { if (res.data.connected) setIsConnected(true); })
+      .catch(() => {}); // no cookie or expired — stay on login screen
+  }, []);
+
+  const handleConnect = async (config) => {
     setIsConnecting(true);
     setConnectionMessage('');
     try {
@@ -237,16 +240,10 @@ const handleConnect = async (config) => {
     }
   };
 
-
-
-    const handleLogout = async () => {
-    try {
-      await api.post('/api/logout');
-      setIsConnected(false);
-      setConnectionMessage('');
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
+  const handleLogout = async () => {
+    await api.post('/api/logout');
+    setIsConnected(false);
+    setConnectionMessage('');
   };
 
   return (

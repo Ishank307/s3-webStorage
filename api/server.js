@@ -64,11 +64,15 @@ app.post('/api/connect', async (req, res) => {
             expiresIn: '30d',
         });
 
+        const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+        const expirationDate = new Date(Date.now() + thirtyDaysMs);
+
         res.cookie(COOKIE_NAME, token, {
             httpOnly: true,
-            secure: isProduction, // secure true only on HTTPS (prod)
-            sameSite: isProduction ? 'None' : 'Lax', // Lax for http://localhost cross-port or proxy
-            maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+            secure: isProduction, // true on Vercel, false locally
+            sameSite: 'Lax', // Because the API is on the exact same domain (Vercel rewrite or Vite proxy)
+            maxAge: thirtyDaysMs, 
+            expires: expirationDate, // Extra compatibility for mobile browsers
         });
 
         res.status(200).json({ message: 'Connected successfully!' });
@@ -84,7 +88,7 @@ app.post('/api/logout', (req, res) => {
     res.clearCookie(COOKIE_NAME, {
         httpOnly: true,
         secure: isProduction,
-        sameSite: isProduction ? 'None' : 'Lax',
+        sameSite: 'Lax',
     });
     res.status(200).json({ message: 'Logged out successfully.' });
 });
